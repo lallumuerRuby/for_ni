@@ -14,7 +14,7 @@
   <Transition name="fade-page">
   <div
     v-if="imagesReady"
-    class="h-screen overflow-hidden flex flex-col items-center justify-center gap-6 px-4 py-12"
+    class="relative h-screen overflow-hidden flex flex-col items-center justify-center gap-6 px-4 py-12"
     :style="{
       backgroundImage: `url(${sanrioBg})`,
       backgroundSize: 'cover',
@@ -22,16 +22,33 @@
       backgroundRepeat: 'no-repeat',
     }"
   >
+    <!-- 右上角使用者資訊 -->
+    <div class="absolute top-4 right-4 flex items-center gap-2">
+      <template v-if="user">
+        <img :src="user.user_metadata.avatar_url" class="w-8 h-8 rounded-full shadow" />
+        <span class="text-xs text-secondary-400 hidden sm:inline">{{ user.user_metadata.name }}</span>
+        <button
+          class="text-xs text-secondary-300 hover:text-secondary-500 bg-white/60 px-2 py-1 rounded-full transition-colors"
+          @click="signOut"
+        >登出</button>
+      </template>
+    </div>
+
     <header class="text-center">
       <h1 class="text-5xl text-secondary-500" style="font-family: 'Shrikhand', cursive;">Guess Who?</h1>
       <p class="text-secondary-400 mt-2">♡〜٩( ˃́▿˂̀ )۶〜♡</p>
     </header>
 
+    <!-- 未登入提示 -->
+    <p v-if="!user" class="text-secondary-400 text-xs bg-white/60 px-3 py-1 rounded-full">
+      點擊扭蛋機以 Google 登入 ♡
+    </p>
+
     <!-- 扭蛋機 -->
     <button
       class="relative inline-block select-none transition-opacity disabled:pointer-events-none"
       :class="[{ shake: isShaking }, drawnToday ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']"
-      :disabled="isShaking || loading || cards.length === 0 || drawnToday"
+      :disabled="isShaking || loading || (user && (cards.length === 0 || drawnToday))"
       @click="handleDraw"
     >
       <img
@@ -90,6 +107,7 @@
     </Transition>
 
     <router-link
+      v-if="user"
       to="/admin"
       class="text-xs text-secondary-300 hover:text-secondary-400"
     >
@@ -100,10 +118,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import sanrioBg from "../assets/images/sanrio.jpg";
 import eggMachine from "../assets/images/egg_machine.webp";
 import { supabase, CARDS_BUCKET } from "../lib/supabase";
+import { useAuth } from "../composables/useAuth";
+
+const { user, signInWithGoogle, signOut } = useAuth();
 
 const cards = ref([]);
 const currentCard = ref(null);
@@ -149,6 +170,7 @@ function withPublicUrl(card) {
 }
 
 async function loadCards() {
+  if (!user.value) return;
   loading.value = true;
   errorMessage.value = "";
   const { data, error } = await supabase
@@ -165,6 +187,10 @@ async function loadCards() {
 }
 
 async function handleDraw() {
+  if (!user.value) {
+    await signInWithGoogle();
+    return;
+  }
   if (isShaking.value || loading.value || cards.value.length === 0 || drawnToday.value) return;
   currentCard.value = null;
   isShaking.value = true;
@@ -176,6 +202,12 @@ async function handleDraw() {
   currentCard.value = cards.value[index];
   markDrawnToday();
 }
+
+// 登入狀態就緒後才載卡（useAuth 的 session 是非同步取得的）
+watch(user, (newUser) => {
+  if (newUser) loadCards();
+  else cards.value = [];
+})
 
 onMounted(async () => {
   const total = 2;
@@ -190,7 +222,6 @@ onMounted(async () => {
   ]);
   imagesReady.value = true;
   checkDrawnToday();
-  loadCards();
 });
 </script>
 

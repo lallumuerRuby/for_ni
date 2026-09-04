@@ -73,6 +73,9 @@ import { ref } from "vue";
 import { supabase } from "../lib/supabase";
 import { uploadCardImage } from "../utils/imageCompress";
 
+const props = defineProps({
+  user: { type: Object, required: true },
+})
 const emit = defineEmits(["created"]);
 
 const type = ref("text");
@@ -111,6 +114,7 @@ async function handleSubmit() {
       type: type.value,
       content: content.value || null,
       image_path: imagePath,
+      user_id: props.user.id,
     });
 
     if (error) throw error;
