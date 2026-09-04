@@ -14,23 +14,18 @@
     </header>
 
     <!-- 扭蛋機 -->
-    <div class="relative inline-block select-none">
+    <button
+      class="relative inline-block select-none cursor-pointer disabled:pointer-events-none"
+      :class="{ shake: isShaking }"
+      :disabled="isShaking || loading || cards.length === 0"
+      @click="handleDraw"
+    >
       <img
-        ref="machineRef"
         :src="eggMachine"
         alt="扭蛋機"
         class="w-80 drop-shadow-xl"
-        :class="{ shake: isShaking }"
       />
-      <!-- 透明按鈕疊在右下角藍色兔子面板 -->
-      <button
-        class="absolute rounded-lg transition-opacity duration-200 opacity-0 hover:opacity-30 hover:bg-white active:opacity-40 disabled:pointer-events-none"
-        style="bottom: 8%; right: 4%; width: 33%; height: 17%;"
-        :disabled="isShaking || loading || cards.length === 0"
-        @click="handleDraw"
-        title="轉動扭蛋機！"
-      />
-    </div>
+    </button>
 
     <p v-if="errorMessage" class="text-red-400 text-sm bg-white/70 px-4 py-1 rounded-full">
       {{ errorMessage }}
@@ -88,7 +83,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import sanrioBg from "../assets/images/sanrio.jpg";
-import eggMachine from "../assets/images/egg_machine.png";
+import eggMachine from "../assets/images/egg_machine.webp";
 import { supabase, CARDS_BUCKET } from "../lib/supabase";
 
 const cards = ref([]);
