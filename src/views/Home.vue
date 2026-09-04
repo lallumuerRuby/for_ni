@@ -1,9 +1,15 @@
 <template>
   <div
     class="min-h-screen flex flex-col items-center justify-center gap-8 px-4 py-12"
+    :style="{
+      backgroundImage: `url(${sanrioBg})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }"
   >
     <header class="text-center">
-      <h1 class="text-3xl font-bold text-secondary-500">Guess Who?</h1>
+      <h1 class="text-5xl text-secondary-500" style="font-family: 'Shrikhand', cursive;">Guess Who?</h1>
       <p class="text-secondary-400 mt-2">♡〜٩( ˃́▿˂̀ )۶〜♡</p>
     </header>
 
@@ -36,6 +42,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import sanrioBg from "../assets/images/sanrio.jpg";
 import { supabase, CARDS_BUCKET } from "../lib/supabase";
 import CardDisplay from "../components/CardDisplay.vue";
 
