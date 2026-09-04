@@ -17,6 +17,7 @@ export function useAuth() {
   onMounted(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     user.value = session?.user ?? null
+    if (session?.user) upsertProfile(session.user)
 
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null
