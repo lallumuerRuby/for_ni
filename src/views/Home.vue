@@ -3,7 +3,7 @@
     class="min-h-screen flex flex-col items-center justify-center gap-8 px-4 py-12"
   >
     <header class="text-center">
-      <h1 class="text-3xl font-bold text-secondary-500">Guest Who?</h1>
+      <h1 class="text-3xl font-bold text-secondary-500">Guess Who?</h1>
       <p class="text-secondary-400 mt-2">♡〜٩( ˃́▿˂̀ )۶〜♡</p>
     </header>
 
