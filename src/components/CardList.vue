@@ -63,7 +63,7 @@ async function handleDelete(card) {
         .from(CARDS_BUCKET)
         .remove([card.image_path])
       if (storageError) {
-        console.error('Storage 檔案刪除失敗:', storageError)
+        console.error('Storage 刪除失敗:', storageError)
       }
     }
 
