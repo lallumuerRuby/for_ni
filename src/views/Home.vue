@@ -65,8 +65,8 @@
     <p v-if="errorMessage" class="text-red-400 text-sm bg-white/70 px-4 py-1 rounded-full">
       {{ errorMessage }}
     </p>
-    <p v-else-if="!loading && cards.length === 0" class="text-secondary-400 text-sm bg-white/70 px-4 py-2 rounded-full">
-      目前還沒有任何卡片，請先到後台新增。
+    <p v-else-if="user && !loading && !systemHasCards" class="text-secondary-400 text-sm bg-white/70 px-4 py-2 rounded-full">
+      目前還沒有任何留言卡，快去留言吧！
     </p>
 
     <!-- 彈出的卡片 Modal -->
@@ -134,6 +134,7 @@ const errorMessage = ref("");
 const imagesReady = ref(false);
 const loadProgress = ref(0);
 const drawnToday = ref(false);
+const systemHasCards = ref(true);
 
 const DRAW_KEY = "last_draw_date";
 
@@ -173,16 +174,20 @@ async function loadCards() {
   if (!user.value) return;
   loading.value = true;
   errorMessage.value = "";
-  const { data, error } = await supabase
-    .from("cards")
-    .select("id, type, content, image_path");
 
-  if (error) {
+  const [cardsResult, hasCardsResult] = await Promise.all([
+    supabase.from("cards").select("id, type, content, image_path"),
+    supabase.rpc("has_any_cards"),
+  ]);
+
+  if (cardsResult.error) {
     errorMessage.value = "卡片載入失敗，請稍後再試。";
-    console.error(error);
+    console.error(cardsResult.error);
   } else {
-    cards.value = (data || []).map(withPublicUrl);
+    cards.value = (cardsResult.data || []).map(withPublicUrl);
   }
+
+  systemHasCards.value = hasCardsResult.data ?? true;
   loading.value = false;
 }
 
