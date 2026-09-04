@@ -2,12 +2,14 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase'
 
 async function upsertProfile(user) {
-  await supabase.from('profiles').upsert({
+  const { error } = await supabase.from('profiles').upsert({
     id: user.id,
     name: user.user_metadata.name,
     avatar_url: user.user_metadata.avatar_url,
     updated_at: new Date().toISOString(),
   })
+  if (error) console.error('[upsertProfile]', error)
+  else console.log('[upsertProfile] ok', user.user_metadata.name)
 }
 
 export function useAuth() {

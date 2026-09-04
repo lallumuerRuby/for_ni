@@ -9,14 +9,14 @@
     </header>
 
     <div class="w-full max-w-xl flex flex-col gap-6">
-      <CardForm :user="user" @created="loadCards" />
+      <CardForm v-if="user" :user="user" @created="loadCards" />
       <CardList :cards="cards" @deleted="onDeleted" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { supabase, CARDS_BUCKET } from '../lib/supabase'
 import { useAuth } from '../composables/useAuth'
 import CardForm from '../components/CardForm.vue'
@@ -52,5 +52,8 @@ function onDeleted(id) {
   cards.value = cards.value.filter((c) => c.id !== id)
 }
 
-onMounted(loadCards)
+watch(user, (newUser) => {
+  if (newUser) loadCards()
+  else cards.value = []
+})
 </script>

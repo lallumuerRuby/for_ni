@@ -47,36 +47,14 @@
     <div class="flex flex-col gap-2">
       <label class="text-sm text-secondary-400">給誰抽？</label>
 
-      <!-- 所有人 -->
       <label class="flex items-center gap-2 cursor-pointer">
-        <input
-          type="radio"
-          name="target"
-          :value="null"
-          v-model="targetUserId"
-          class="accent-accent-400"
-        />
+        <input type="radio" name="target" :value="null" v-model="targetUserId" class="accent-accent-400" />
         <span class="text-sm text-secondary-500">所有人都可以抽</span>
       </label>
 
-      <!-- 其他使用者 -->
-      <label
-        v-for="profile in profiles"
-        :key="profile.id"
-        class="flex items-center gap-2 cursor-pointer"
-      >
-        <input
-          type="radio"
-          name="target"
-          :value="profile.id"
-          v-model="targetUserId"
-          class="accent-accent-400"
-        />
-        <img
-          v-if="profile.avatar_url"
-          :src="profile.avatar_url"
-          class="w-6 h-6 rounded-full"
-        />
+      <label v-for="profile in profiles" :key="profile.id" class="flex items-center gap-2 cursor-pointer">
+        <input type="radio" name="target" :value="profile.id" v-model="targetUserId" class="accent-accent-400" />
+        <img v-if="profile.avatar_url" :src="profile.avatar_url" class="w-6 h-6 rounded-full" />
         <span class="text-sm text-secondary-500">{{ profile.name }}</span>
       </label>
 
@@ -116,10 +94,11 @@ const targetUserId = ref(null);
 const profiles = ref([]);
 
 onMounted(async () => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('id, name, avatar_url')
     .neq('id', props.user.id)
+  console.log('[CardForm] profiles', data, error)
   profiles.value = data || []
 })
 
