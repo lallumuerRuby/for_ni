@@ -29,9 +29,9 @@
 
     <!-- 扭蛋機 -->
     <button
-      class="relative inline-block select-none cursor-pointer disabled:pointer-events-none"
-      :class="{ shake: isShaking }"
-      :disabled="isShaking || loading || cards.length === 0"
+      class="relative inline-block select-none transition-opacity disabled:pointer-events-none"
+      :class="[{ shake: isShaking }, drawnToday ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']"
+      :disabled="isShaking || loading || cards.length === 0 || drawnToday"
       @click="handleDraw"
     >
       <img
@@ -40,6 +40,10 @@
         class="w-80 drop-shadow-xl"
       />
     </button>
+
+    <p v-if="drawnToday" class="text-secondary-400 text-sm bg-white/70 px-4 py-2 rounded-full">
+      今天已經抽過囉！明天再來 ♡
+    </p>
 
     <p v-if="errorMessage" class="text-red-400 text-sm bg-white/70 px-4 py-1 rounded-full">
       {{ errorMessage }}
@@ -108,6 +112,22 @@ const isShaking = ref(false);
 const errorMessage = ref("");
 const imagesReady = ref(false);
 const loadProgress = ref(0);
+const drawnToday = ref(false);
+
+const DRAW_KEY = "last_draw_date";
+
+function todayString() {
+  return new Date().toLocaleDateString("zh-TW");
+}
+
+function checkDrawnToday() {
+  drawnToday.value = localStorage.getItem(DRAW_KEY) === todayString();
+}
+
+function markDrawnToday() {
+  localStorage.setItem(DRAW_KEY, todayString());
+  drawnToday.value = true;
+}
 
 function preloadImage(src, onProgress) {
   return new Promise((resolve) => {
@@ -145,7 +165,7 @@ async function loadCards() {
 }
 
 async function handleDraw() {
-  if (isShaking.value || loading.value || cards.value.length === 0) return;
+  if (isShaking.value || loading.value || cards.value.length === 0 || drawnToday.value) return;
   currentCard.value = null;
   isShaking.value = true;
 
@@ -154,6 +174,7 @@ async function handleDraw() {
 
   const index = Math.floor(Math.random() * cards.value.length);
   currentCard.value = cards.value[index];
+  markDrawnToday();
 }
 
 onMounted(async () => {
@@ -168,6 +189,7 @@ onMounted(async () => {
     preloadImage(eggMachine, onProgress),
   ]);
   imagesReady.value = true;
+  checkDrawnToday();
   loadCards();
 });
 </script>
