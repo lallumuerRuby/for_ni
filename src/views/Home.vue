@@ -1,11 +1,20 @@
 <template>
-  <!-- 載入中佔位，避免圖片閃爍 -->
-  <div v-if="!imagesReady" class="min-h-screen bg-primary-100" />
+  <!-- 載入中畫面 -->
+  <div v-if="!imagesReady" class="min-h-screen bg-primary-100 flex flex-col items-center justify-center gap-4">
+    <p class="text-secondary-400 text-sm" style="font-family: 'Shrikhand', cursive;">Guess Who?</p>
+    <div class="w-48 h-2 bg-primary-200 rounded-full overflow-hidden">
+      <div
+        class="h-full bg-accent-400 rounded-full transition-all duration-300 ease-out"
+        :style="{ width: loadProgress + '%' }"
+      />
+    </div>
+    <p class="text-secondary-300 text-xs">{{ loadProgress }}%</p>
+  </div>
 
   <Transition name="fade-page">
   <div
     v-if="imagesReady"
-    class="min-h-screen flex flex-col items-center justify-center gap-6 px-4 py-12"
+    class="h-screen overflow-hidden flex flex-col items-center justify-center gap-6 px-4 py-12"
     :style="{
       backgroundImage: `url(${sanrioBg})`,
       backgroundSize: 'cover',
@@ -98,12 +107,13 @@ const loading = ref(false);
 const isShaking = ref(false);
 const errorMessage = ref("");
 const imagesReady = ref(false);
+const loadProgress = ref(0);
 
-function preloadImage(src) {
+function preloadImage(src, onProgress) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = resolve;
-    img.onerror = resolve; // 失敗也繼續，不卡住
+    img.onload = () => { onProgress(); resolve(); };
+    img.onerror = () => { onProgress(); resolve(); };
     img.src = src;
   });
 }
@@ -147,7 +157,16 @@ async function handleDraw() {
 }
 
 onMounted(async () => {
-  await Promise.all([preloadImage(sanrioBg), preloadImage(eggMachine)]);
+  const total = 2;
+  let done = 0;
+  const onProgress = () => {
+    done += 1;
+    loadProgress.value = Math.round((done / total) * 100);
+  };
+  await Promise.all([
+    preloadImage(sanrioBg, onProgress),
+    preloadImage(eggMachine, onProgress),
+  ]);
   imagesReady.value = true;
   loadCards();
 });
