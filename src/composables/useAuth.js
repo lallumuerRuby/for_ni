@@ -1,6 +1,15 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { supabase } from '../lib/supabase'
 
+async function upsertProfile(user) {
+  await supabase.from('profiles').upsert({
+    id: user.id,
+    name: user.user_metadata.name,
+    avatar_url: user.user_metadata.avatar_url,
+    updated_at: new Date().toISOString(),
+  })
+}
+
 export function useAuth() {
   const user = ref(null)
   let subscription
@@ -9,8 +18,11 @@ export function useAuth() {
     const { data: { session } } = await supabase.auth.getSession()
     user.value = session?.user ?? null
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null
+      if (event === 'SIGNED_IN' && session?.user) {
+        upsertProfile(session.user)
+      }
     })
     subscription = data.subscription
   })
