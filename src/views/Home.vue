@@ -1,5 +1,10 @@
 <template>
+  <!-- 載入中佔位，避免圖片閃爍 -->
+  <div v-if="!imagesReady" class="min-h-screen bg-primary-100" />
+
+  <Transition name="fade-page">
   <div
+    v-if="imagesReady"
     class="min-h-screen flex flex-col items-center justify-center gap-6 px-4 py-12"
     :style="{
       backgroundImage: `url(${sanrioBg})`,
@@ -78,6 +83,7 @@
       我要留言
     </router-link>
   </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -91,6 +97,16 @@ const currentCard = ref(null);
 const loading = ref(false);
 const isShaking = ref(false);
 const errorMessage = ref("");
+const imagesReady = ref(false);
+
+function preloadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = resolve; // 失敗也繼續，不卡住
+    img.src = src;
+  });
+}
 
 function withPublicUrl(card) {
   if (card.type === "image" && card.image_path) {
@@ -130,7 +146,11 @@ async function handleDraw() {
   currentCard.value = cards.value[index];
 }
 
-onMounted(loadCards);
+onMounted(async () => {
+  await Promise.all([preloadImage(sanrioBg), preloadImage(eggMachine)]);
+  imagesReady.value = true;
+  loadCards();
+});
 </script>
 
 <style scoped>
@@ -169,5 +189,12 @@ onMounted(loadCards);
 .bounce-card-leave-to {
   opacity: 0;
   transform: scale(0.9);
+}
+
+.fade-page-enter-active {
+  transition: opacity 0.4s ease;
+}
+.fade-page-enter-from {
+  opacity: 0;
 }
 </style>
