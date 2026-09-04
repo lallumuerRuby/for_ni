@@ -51,11 +51,15 @@ alter table public.cards
 -- 3. 開啟 Row Level Security
 alter table public.cards enable row level security;
 
--- 只能看到「給自己」或「給所有人（null）」的卡片
-create policy "select_targeted_or_public"
+-- 自己新增的（管理用）、給所有人（null）、或指定給自己的卡片
+create policy "select_own_or_targeted"
   on public.cards for select
   to authenticated
-  using (target_user_id is null or target_user_id = auth.uid());
+  using (
+    user_id = auth.uid()
+    or target_user_id is null
+    or target_user_id = auth.uid()
+  );
 
 -- 登入使用者只能新增屬於自己的卡片
 create policy "insert_own_cards"
