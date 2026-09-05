@@ -47,8 +47,8 @@
     <!-- 扭蛋機 -->
     <button
       class="relative inline-block select-none transition-opacity disabled:pointer-events-none"
-      :class="[{ shake: isShaking }, drawnToday ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']"
-      :disabled="isShaking || loading || (user && (cards.length === 0 || drawnToday))"
+      :class="[{ shake: isShaking }, 'cursor-pointer']"
+      :disabled="isShaking || loading || (user && cards.length === 0)"
       @click="handleDraw"
     >
       <img
@@ -58,9 +58,9 @@
       />
     </button>
 
-    <p v-if="drawnToday" class="text-secondary-400 text-sm bg-white/70 px-4 py-2 rounded-full">
+    <!-- <p v-if="drawnToday" class="text-secondary-400 text-sm bg-white/70 px-4 py-2 rounded-full">
       今天已經抽過囉！明天再來 ♡
-    </p>
+    </p> -->
 
     <p v-if="errorMessage" class="text-red-400 text-sm bg-white/70 px-4 py-1 rounded-full">
       {{ errorMessage }}
@@ -143,12 +143,12 @@ function todayString() {
 }
 
 function checkDrawnToday() {
-  drawnToday.value = localStorage.getItem(DRAW_KEY) === todayString();
+  // drawnToday.value = localStorage.getItem(DRAW_KEY) === todayString();
 }
 
 function markDrawnToday() {
-  localStorage.setItem(DRAW_KEY, todayString());
-  drawnToday.value = true;
+  // localStorage.setItem(DRAW_KEY, todayString());
+  // drawnToday.value = true;
 }
 
 function preloadImage(src, onProgress) {
@@ -196,7 +196,7 @@ async function handleDraw() {
     await signInWithGoogle();
     return;
   }
-  if (isShaking.value || loading.value || cards.value.length === 0 || drawnToday.value) return;
+  if (isShaking.value || loading.value || cards.value.length === 0/* || drawnToday.value*/) return;
   currentCard.value = null;
   isShaking.value = true;
 
